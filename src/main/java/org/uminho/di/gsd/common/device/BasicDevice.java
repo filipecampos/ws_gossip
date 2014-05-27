@@ -1,7 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+
 package org.uminho.di.gsd.common.device;
 
 import java.io.File;
@@ -21,10 +33,6 @@ import org.ws4d.java.structures.Iterator;
 import org.ws4d.java.types.EndpointReference;
 import org.ws4d.java.types.URI;
 
-/**
- *
- * @author fjoc
- */
 public class BasicDevice extends DefaultDevice {
 
     final static Logger logger = Logger.getLogger(BasicDevice.class);
@@ -101,8 +109,6 @@ public class BasicDevice extends DefaultDevice {
         setEndpointReference(devEPR);
     }
 
-    
-
     /* Initializers */
     public void initializeConfiguration() {
         Configuration.loadConfigs();
@@ -173,12 +179,6 @@ public class BasicDevice extends DefaultDevice {
 
     public void shutdown() {
         shutdownWorkers();
-//        stopDevice();
-//
-//        DPWSFramework.stop();
-//
-//        Runtime.getRuntime().halt(0);
-//        System.exit(0);
     }
 
     public void writeStats() {
@@ -234,8 +234,6 @@ public class BasicDevice extends DefaultDevice {
             actionTask.setTerminate(true);
 
             actionTask = null;
-
-//            DPWSFramework.getThreadPool().shutdown();
         }
     }
 

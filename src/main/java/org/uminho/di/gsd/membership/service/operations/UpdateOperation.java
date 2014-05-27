@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 
 package org.uminho.di.gsd.membership.service.operations;
 
@@ -18,108 +29,104 @@ import org.ws4d.java.service.parameter.ParameterValue;
 import org.ws4d.java.structures.Iterator;
 import org.ws4d.java.structures.List;
 
-/**
- *
- * @author fcampos
- */
 public class UpdateOperation extends MembershipOperation {
-    static Logger logger = Logger.getLogger(UpdateOperation.class);
+	static Logger logger = Logger.getLogger(UpdateOperation.class);
 
-    public UpdateOperation()
-    {
-        super(Constants.UpdateOperationName, Constants.MembershipPortTypeQName);
+	public UpdateOperation()
+	{
+		super(Constants.UpdateOperationName, Constants.MembershipPortTypeQName);
 
-        initInput();
+		initInput();
 
-        initOutput();
-    }
+		initOutput();
+	}
 
-    @Override
-    public ParameterValue invoke(ParameterValue pv) throws InvocationException, TimeoutException
-    {
-        ParameterValue response = createOutputValue();
-        
-        // request
-        if(pv != null)
-        {
-            List returnList = null;
-            try
-            {
-                List sis = ServiceInfo.fromPVToServiceInfoList(pv);
-                MembershipRepository repo = getRepository();
-                returnList = repo.update(sis);
-            }
-            catch(Exception e)
-            {
-                logger.error(e.getMessage(), e);
-            }
-            
-            if((returnList != null) && (!returnList.isEmpty()))
-            {
-                logger.debug("Will return this list with " + returnList.size() + " SIs.");
-                
-                // if there is any ServiceInfo to return
-                if(logger.isDebugEnabled())
-                {
-                    Iterator iter = returnList.iterator();
-                    StringBuilder sb = new StringBuilder();
+	@Override
+	public ParameterValue invoke(ParameterValue pv) throws InvocationException, TimeoutException
+	{
+		ParameterValue response = createOutputValue();
 
-                    while(iter.hasNext())
-                    {
-                        sb.append(((ServiceInfo) iter.next()).toString());
-                    }
+		// request
+		if(pv != null)
+		{
+			List returnList = null;
+			try
+			{
+				List sis = ServiceInfo.fromPVToServiceInfoList(pv);
+				MembershipRepository repo = getRepository();
+				returnList = repo.update(sis);
+			}
+			catch(Exception e)
+			{
+				logger.error(e.getMessage(), e);
+			}
 
-                    logger.debug(sb.toString());
-                }
+			if((returnList != null) && (!returnList.isEmpty()))
+			{
+				logger.debug("Will return this list with " + returnList.size() + " SIs.");
 
-                // set response
-                response = ServiceInfo.fromServiceInfoListToPV(returnList, response);
-            }
-        }
-        
-        return response;
-    }
+				// if there is any ServiceInfo to return
+						if(logger.isDebugEnabled())
+						{
+							Iterator iter = returnList.iterator();
+							StringBuilder sb = new StringBuilder();
 
-    @Override
-    protected void initInput()
-    {
-        ComplexType updateElementType = new ComplexType(Constants.UpdateElementTypeQName, ComplexType.CONTAINER_SEQUENCE);
-        updateElementType.addElement(initializeServiceElement());
+							while(iter.hasNext())
+							{
+								sb.append(((ServiceInfo) iter.next()).toString());
+							}
 
-        Element updateIn = new Element(Constants.UpdateInMessageQName);
-        updateIn.setType(updateElementType);
+							logger.debug(sb.toString());
+						}
 
-        this.setInput(updateIn);
-    }
+						// set response
+						response = ServiceInfo.fromServiceInfoListToPV(returnList, response);
+			}
+		}
 
-    @Override
-    protected void initOutput()
-    {
-        ComplexType updateResponseElementType = new ComplexType(Constants.UpdateResponseElementTypeQName, ComplexType.CONTAINER_SEQUENCE);
-        updateResponseElementType.addElement(initializeServiceElement());
+		return response;
+	}
 
-        Element updateOut = new Element(Constants.UpdateOutMessageQName);
-        updateOut.setType(updateResponseElementType);
-        
-	this.setOutput(updateOut);
-    }
+	@Override
+	protected void initInput()
+	{
+		ComplexType updateElementType = new ComplexType(Constants.UpdateElementTypeQName, ComplexType.CONTAINER_SEQUENCE);
+		updateElementType.addElement(initializeServiceElement());
 
-    private Element initializeServiceElement()
-    {
-        Element devRef = new Element(Constants.DeviceRefElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_ANYURI));
-        devRef.setMinOccurs(0);
+		Element updateIn = new Element(Constants.UpdateInMessageQName);
+		updateIn.setType(updateElementType);
 
-        ComplexType complexType = new ComplexType(Constants.ServiceComplexTypeElementQName, ComplexType.CONTAINER_SEQUENCE);
-        complexType.addElement(devRef);
-        complexType.addElement(new Element(Constants.ServiceTypeElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_QNAME)));
-        complexType.addElement(new Element(Constants.ServiceRefElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_ANYURI)));
-        complexType.addElement(new Element(Constants.ServiceEndpointAddressElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_ANYURI)));
-        complexType.addElement(new Element(Constants.ServiceHeartbeatElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_UNSIGNED_LONG)));
+		this.setInput(updateIn);
+	}
 
-        Element serviceElement = new Element(Constants.ServiceElementQName);
-        serviceElement.setType(complexType);
-        serviceElement.setMaxOccurs(-1);
-        
-        return serviceElement;
-    }
+	@Override
+	protected void initOutput()
+	{
+		ComplexType updateResponseElementType = new ComplexType(Constants.UpdateResponseElementTypeQName, ComplexType.CONTAINER_SEQUENCE);
+		updateResponseElementType.addElement(initializeServiceElement());
+
+		Element updateOut = new Element(Constants.UpdateOutMessageQName);
+		updateOut.setType(updateResponseElementType);
+
+		this.setOutput(updateOut);
+	}
+
+	private Element initializeServiceElement()
+	{
+		Element devRef = new Element(Constants.DeviceRefElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_ANYURI));
+		devRef.setMinOccurs(0);
+
+		ComplexType complexType = new ComplexType(Constants.ServiceComplexTypeElementQName, ComplexType.CONTAINER_SEQUENCE);
+		complexType.addElement(devRef);
+		complexType.addElement(new Element(Constants.ServiceTypeElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_QNAME)));
+		complexType.addElement(new Element(Constants.ServiceRefElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_ANYURI)));
+		complexType.addElement(new Element(Constants.ServiceEndpointAddressElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_ANYURI)));
+		complexType.addElement(new Element(Constants.ServiceHeartbeatElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_UNSIGNED_LONG)));
+
+		Element serviceElement = new Element(Constants.ServiceElementQName);
+		serviceElement.setType(complexType);
+		serviceElement.setMaxOccurs(-1);
+
+		return serviceElement;
+	}
 }

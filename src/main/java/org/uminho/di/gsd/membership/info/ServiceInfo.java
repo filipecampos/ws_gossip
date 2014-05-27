@@ -1,7 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+
 package org.uminho.di.gsd.membership.info;
 
 import org.apache.log4j.Logger;
@@ -16,261 +28,255 @@ import org.ws4d.java.types.EndpointReference;
 import org.ws4d.java.types.QName;
 import org.ws4d.java.types.URI;
 
-/**
- *
- * @author fcampos
- */
 public class ServiceInfo extends AbstractInfo {
 
-    static Logger logger = Logger.getLogger(ServiceInfo.class);
-    
-    // service
-    private URI serviceId;
-    private List serviceTypes;
-    private List endpointAddresses;
-    // preferred endpoint address -> used to uniquely identify the service
-    private URI preferredXAddress;
-    // device identifier
-    private URI hostingDeviceEndpointAddress;
+	static Logger logger = Logger.getLogger(ServiceInfo.class);
 
-    public ServiceInfo() {
-        this.serviceTypes = new ArrayList();
-        this.endpointAddresses = new ArrayList();
+	// service
+	private URI serviceId;
+	private List serviceTypes;
+	private List endpointAddresses;
+	// preferred endpoint address -> used to uniquely identify the service
+	private URI preferredXAddress;
+	// device identifier
+	private URI hostingDeviceEndpointAddress;
 
-        setHeartbeat(0);
-    }
+	public ServiceInfo() {
+		this.serviceTypes = new ArrayList();
+		this.endpointAddresses = new ArrayList();
 
-    public ServiceInfo(ServiceReference svcRef, URI dvcEndpointAddress) {
-        serviceId = svcRef.getServiceId();
-        if(svcRef.getLocation() == ServiceReference.LOCATION_UNKNOWN)
-            try {
-                serviceTypes = new ArrayList(svcRef.getService().getPortTypes());
-            } catch (TimeoutException ex) {
-                logger.error(ex);
-                // assume push gossip if using a mock service url
-                serviceTypes = new ArrayList();
-                serviceTypes.add(Constants.GossipPushPortQName);
-            }
-        else
-            serviceTypes = new ArrayList(svcRef.getPortTypes());
+		setHeartbeat(0);
+	}
 
-        if(serviceTypes.size() == 0)
-        {
-            logger.error("Service has no ServiceType!");
-            throw new NullPointerException("Service has no ServiceType!");
-        }
+	public ServiceInfo(ServiceReference svcRef, URI dvcEndpointAddress) {
+		serviceId = svcRef.getServiceId();
+		if(svcRef.getLocation() == ServiceReference.LOCATION_UNKNOWN)
+			try {
+				serviceTypes = new ArrayList(svcRef.getService().getPortTypes());
+			} catch (TimeoutException ex) {
+				logger.error(ex);
+				// assume push gossip if using a mock service url
+				serviceTypes = new ArrayList();
+				serviceTypes.add(Constants.GossipPushPortQName);
+			}
+		else
+			serviceTypes = new ArrayList(svcRef.getPortTypes());
 
-        endpointAddresses = new ArrayList(svcRef.getEndpointReferences());
+		if(serviceTypes.size() == 0)
+		{
+			logger.error("Service has no ServiceType!");
+			throw new NullPointerException("Service has no ServiceType!");
+		}
 
-        preferredXAddress = svcRef.getPreferredXAddress();
-        if (preferredXAddress == null) {
-            if (endpointAddresses.size() > 0) {
-                preferredXAddress = ((EndpointReference) endpointAddresses.get(0)).getAddress();
-            } else {
-                preferredXAddress = new URI("Error! No epr defined!");
-            }
-        }
+		endpointAddresses = new ArrayList(svcRef.getEndpointReferences());
 
-        this.hostingDeviceEndpointAddress = dvcEndpointAddress;
+		preferredXAddress = svcRef.getPreferredXAddress();
+		if (preferredXAddress == null) {
+			if (endpointAddresses.size() > 0) {
+				preferredXAddress = ((EndpointReference) endpointAddresses.get(0)).getAddress();
+			} else {
+				preferredXAddress = new URI("Error! No epr defined!");
+			}
+		}
 
-        setHeartbeat(0);
-    }
+		this.hostingDeviceEndpointAddress = dvcEndpointAddress;
 
-    public void setPreferredXAddress(URI preferredXAddress) {
-        this.preferredXAddress = preferredXAddress;
-    }
+		setHeartbeat(0);
+	}
 
-    public void addEndpointAddress(EndpointReference endpointAddress) {
-        this.endpointAddresses.add(endpointAddress);
-    }
+	public void setPreferredXAddress(URI preferredXAddress) {
+		this.preferredXAddress = preferredXAddress;
+	}
 
-    public void setHostingDeviceEndpointAddress(URI hostingDeviceEndpointAddress) {
-        this.hostingDeviceEndpointAddress = hostingDeviceEndpointAddress;
-    }
+	public void addEndpointAddress(EndpointReference endpointAddress) {
+		this.endpointAddresses.add(endpointAddress);
+	}
 
-    public void setServiceId(URI serviceId) {
-        this.serviceId = serviceId;
-    }
+	public void setHostingDeviceEndpointAddress(URI hostingDeviceEndpointAddress) {
+		this.hostingDeviceEndpointAddress = hostingDeviceEndpointAddress;
+	}
 
-    public void addServiceType(QName serviceType) {
-        this.serviceTypes.add(serviceType);
-    }
+	public void setServiceId(URI serviceId) {
+		this.serviceId = serviceId;
+	}
 
-    public List getEndpointAddresses() {
-        return endpointAddresses;
-    }
+	public void addServiceType(QName serviceType) {
+		this.serviceTypes.add(serviceType);
+	}
 
-    public URI getHostingDeviceEndpointAddress() {
-        return hostingDeviceEndpointAddress;
-    }
+	public List getEndpointAddresses() {
+		return endpointAddresses;
+	}
 
-    public URI getPreferredXAddress() {
-        return preferredXAddress;
-    }
+	public URI getHostingDeviceEndpointAddress() {
+		return hostingDeviceEndpointAddress;
+	}
 
-    public URI getServiceId() {
-        return serviceId;
-    }
+	public URI getPreferredXAddress() {
+		return preferredXAddress;
+	}
 
-    public List getServiceTypes() {
-        return serviceTypes;
-    }
+	public URI getServiceId() {
+		return serviceId;
+	}
 
-    public void setServiceTypes(List serviceTypes) {
-        this.serviceTypes = serviceTypes;
-    }
+	public List getServiceTypes() {
+		return serviceTypes;
+	}
 
-    public boolean update(ServiceInfo si) {
-        logger.debug("siownSi.heartbeat=" + this.heartbeat + "; si.heartbeat=" + si.getHeartbeat());
-        boolean older = false;
+	public void setServiceTypes(List serviceTypes) {
+		this.serviceTypes = serviceTypes;
+	}
 
-        long hb = si.getHeartbeat();
-        if (hb > heartbeat) {
-            setHeartbeat(hb);
-        } else if (hb < heartbeat) {
-            older = true;
-        }
+	public boolean update(ServiceInfo si) {
+		logger.debug("siownSi.heartbeat=" + this.heartbeat + "; si.heartbeat=" + si.getHeartbeat());
+		boolean older = false;
 
-        return older;
-    }
+		long hb = si.getHeartbeat();
+		if (hb > heartbeat) {
+			setHeartbeat(hb);
+		} else if (hb < heartbeat) {
+			older = true;
+		}
 
-    public boolean isGossipService() {
-        return serviceTypes.contains(Constants.GossipPushPortQName);
-    }
+		return older;
+	}
 
-    public boolean isMembershipService() {
-        return serviceTypes.contains(Constants.MembershipPortTypeQName);
-    }
+	public boolean isGossipService() {
+		return serviceTypes.contains(Constants.GossipPushPortQName);
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\n\nService:");
+	public boolean isMembershipService() {
+		return serviceTypes.contains(Constants.MembershipPortTypeQName);
+	}
 
-        if(serviceId != null)
-        {
-            sb.append("\nId-");
-            sb.append(serviceId.toString());
-        }
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n\nService:");
 
-        sb.append("\nTypes:\n");
-        Iterator iter = serviceTypes.iterator();
-        while (iter.hasNext()) {
-            sb.append(iter.next());
-            sb.append('\n');
-        }
+		if(serviceId != null)
+		{
+			sb.append("\nId-");
+			sb.append(serviceId.toString());
+		}
 
-        sb.append("EPRs:\n");
-        iter = endpointAddresses.iterator();
-        while (iter.hasNext()) {
-            sb.append(iter.next());
-            sb.append('\n');
-        }
+		sb.append("\nTypes:\n");
+		Iterator iter = serviceTypes.iterator();
+		while (iter.hasNext()) {
+			sb.append(iter.next());
+			sb.append('\n');
+		}
 
-        sb.append("Preferred EPR-");
-        sb.append(preferredXAddress.toString());
+		sb.append("EPRs:\n");
+		iter = endpointAddresses.iterator();
+		while (iter.hasNext()) {
+			sb.append(iter.next());
+			sb.append('\n');
+		}
 
-        sb.append(super.toString());
+		sb.append("Preferred EPR-");
+		sb.append(preferredXAddress.toString());
 
-        return sb.toString();
-    }
+		sb.append(super.toString());
 
-    public boolean sameService(ServiceInfo si) {
-        return ((this.preferredXAddress.equals(si.preferredXAddress))
-                && (this.hostingDeviceEndpointAddress.equals(si.hostingDeviceEndpointAddress)));
-    }
+		return sb.toString();
+	}
 
-    public boolean equals(ServiceInfo si) {
-        return (sameService(si) && (this.heartbeat == si.heartbeat));
-    }
+	public boolean sameService(ServiceInfo si) {
+		return ((this.preferredXAddress.equals(si.preferredXAddress))
+				&& (this.hostingDeviceEndpointAddress.equals(si.hostingDeviceEndpointAddress)));
+	}
 
-    public static List fromPVToServiceInfoList(ParameterValue pv) throws Exception {
-        int numSvc = pv.getChildrenCount("Svc");
-        logger.debug("PV has " + numSvc + " Svc children!");
+	public boolean equals(ServiceInfo si) {
+		return (sameService(si) && (this.heartbeat == si.heartbeat));
+	}
 
-        List list = new ArrayList(numSvc);
-        ServiceInfo si = null;
-        int i = 0;
-        while (i < numSvc) {
-            si = new ServiceInfo();
+	public static List fromPVToServiceInfoList(ParameterValue pv) throws Exception {
+		int numSvc = pv.getChildrenCount("Svc");
+		logger.debug("PV has " + numSvc + " Svc children!");
 
-            String prefix = "Svc[" + i + "]/";
+		List list = new ArrayList(numSvc);
+		ServiceInfo si = null;
+		int i = 0;
+		while (i < numSvc) {
+			si = new ServiceInfo();
 
-            // device reference
-            String devRefURI = pv.getValue(prefix + "DevRef");
-            si.setHostingDeviceEndpointAddress(new URI(devRefURI));
+			String prefix = "Svc[" + i + "]/";
 
-            // service type
-            String svcTypeQName = pv.getValue(prefix + "Type");
-            if((svcTypeQName == null) || (svcTypeQName.isEmpty()))
-            {
-                logger.error("Creating ServiceInfo for service without type!");
+			// device reference
+			String devRefURI = pv.getValue(prefix + "DevRef");
+			si.setHostingDeviceEndpointAddress(new URI(devRefURI));
 
-//                throw new Exception("Creating ServiceInfo for service without type!");
-            }
-            else
-                si.addServiceType(QName.construct(svcTypeQName));
-            
-            // service reference
-            String svcRefURI = pv.getValue(prefix + "Ref");
-            si.setPreferredXAddress(new URI(svcRefURI));
+			// service type
+			String svcTypeQName = pv.getValue(prefix + "Type");
+			if((svcTypeQName == null) || (svcTypeQName.isEmpty()))
+			{
+				logger.error("Creating ServiceInfo for service without type!");
+			}
+			else
+				si.addServiceType(QName.construct(svcTypeQName));
 
-            // service endpoints
-            String svcEndpointURI = pv.getValue(prefix + "Addr");
-            si.addEndpointAddress(new EndpointReference(new URI(svcEndpointURI)));
+			// service reference
+			String svcRefURI = pv.getValue(prefix + "Ref");
+			si.setPreferredXAddress(new URI(svcRefURI));
 
-            // service heartbeat
-            String heartbeatLong = pv.getValue(prefix + "Heartbeat");
-            si.setHeartbeat(Long.parseLong(heartbeatLong));
+			// service endpoints
+			String svcEndpointURI = pv.getValue(prefix + "Addr");
+			si.addEndpointAddress(new EndpointReference(new URI(svcEndpointURI)));
 
-            // Add serviceInfo to list
-            list.add(si);
+			// service heartbeat
+			String heartbeatLong = pv.getValue(prefix + "Heartbeat");
+			si.setHeartbeat(Long.parseLong(heartbeatLong));
 
-            i++;
-        }
-        
-        return list;
-    }
+			// Add serviceInfo to list
+			list.add(si);
 
-    public static ParameterValue fromServiceInfoListToPV(List sis, ParameterValue pv)
-    {
-        Iterator iter = sis.iterator();
-        int i = 0;
-        ServiceInfo si = null;
-        while(iter.hasNext())
-        {
-            si = (ServiceInfo) iter.next();
+			i++;
+		}
 
-            if(si != null)
-            {
-                String prefix = "Svc[" + i + "]/";
+		return list;
+	}
 
-                // device reference
-                URI devRef = si.getHostingDeviceEndpointAddress();
-                pv.setValue(prefix + "DevRef", devRef.toString());
+	public static ParameterValue fromServiceInfoListToPV(List sis, ParameterValue pv)
+	{
+		Iterator iter = sis.iterator();
+		int i = 0;
+		ServiceInfo si = null;
+		while(iter.hasNext())
+		{
+			si = (ServiceInfo) iter.next();
 
-                // service type
-                // TODO corrigir type inexistente! -> verificar se corrigido
-                QName svcType = (QName) si.getServiceTypes().get(0);
-                pv.setValue(prefix + "Type", svcType.getNamespace() + "/" + svcType.getLocalPart());
+			if(si != null)
+			{
+				String prefix = "Svc[" + i + "]/";
 
-                // service reference
-                URI svcRef = si.getPreferredXAddress();
-                pv.setValue(prefix + "Ref", svcRef.toString());
+				// device reference
+				URI devRef = si.getHostingDeviceEndpointAddress();
+				pv.setValue(prefix + "DevRef", devRef.toString());
 
-                // service endpoints
-                EndpointReference epr = (EndpointReference) si.getEndpointAddresses().get(0);
-                pv.setValue(prefix + "Addr", epr.getAddress().toString());
+				// service type
+				// TODO corrigir type inexistente! -> verificar se corrigido
+				QName svcType = (QName) si.getServiceTypes().get(0);
+				pv.setValue(prefix + "Type", svcType.getNamespace() + "/" + svcType.getLocalPart());
 
-                // service heartbeat
-                long heartbeat = si.getHeartbeat();
-                pv.setValue(prefix + "Heartbeat", Long.toString(heartbeat));
+				// service reference
+				URI svcRef = si.getPreferredXAddress();
+				pv.setValue(prefix + "Ref", svcRef.toString());
 
-                i++;
-            }
-            else
-                logger.error("Error! si is null!");
-        }
-        return pv;
-    }
+				// service endpoints
+				EndpointReference epr = (EndpointReference) si.getEndpointAddresses().get(0);
+				pv.setValue(prefix + "Addr", epr.getAddress().toString());
+
+				// service heartbeat
+				long heartbeat = si.getHeartbeat();
+				pv.setValue(prefix + "Heartbeat", Long.toString(heartbeat));
+
+				i++;
+			}
+			else
+				logger.error("Error! si is null!");
+		}
+		return pv;
+	}
 }

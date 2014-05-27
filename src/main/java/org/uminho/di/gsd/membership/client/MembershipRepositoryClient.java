@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package org.uminho.di.gsd.membership.client;
 
 import java.io.FileWriter;
@@ -33,299 +48,299 @@ import org.ws4d.java.types.URI;
 
 public class MembershipRepositoryClient extends DefaultClient {
 
-    static Logger logger = Logger.getLogger(MembershipRepositoryClient.class);
-    private MembershipRepository repository;
-    private List latencies;
-    private MembershipDevice device;
-    private Long queryRate;
-    private Random random;
-    private int[] probs;
-    private String idStr = "";
+	static Logger logger = Logger.getLogger(MembershipRepositoryClient.class);
+	private MembershipRepository repository;
+	private List latencies;
+	private MembershipDevice device;
+	private Long queryRate;
+	private Random random;
+	private int[] probs;
+	private String idStr = "";
 
-    public MembershipRepositoryClient() {
-        this.init();
-    }
+	public MembershipRepositoryClient() {
+		this.init();
+	}
 
-    public MembershipRepositoryClient(MembershipRepository repository) {
-        this.repository = repository;
-        this.init();
-    }
+	public MembershipRepositoryClient(MembershipRepository repository) {
+		this.repository = repository;
+		this.init();
+	}
 
-    public void setDevice(MembershipDevice dvc) {
-        device = dvc;
-        // get configuration values
+	public void setDevice(MembershipDevice dvc) {
+		device = dvc;
+		// get configuration values
 
-        queryRate = (Long) Configuration.getConfigParamValue(Configuration.queryRate);
-        idStr = "[Device" + device.getPort() + "]";
-        logger.debug(idStr + "QueryRate=" + queryRate);
+		queryRate = (Long) Configuration.getConfigParamValue(Configuration.queryRate);
+		idStr = "[Device" + device.getPort() + "]";
+		logger.debug(idStr + "QueryRate=" + queryRate);
 
-        random = new Random();
+		random = new Random();
 
-        initProbabilities();
-    }
+		initProbabilities();
+	}
 
-    private void initProbabilities() {
-        probs = new int[100];
+	private void initProbabilities() {
+		probs = new int[100];
 
-        for (int i = 0; i < 100; i++) {
-            if (i < queryRate) {
-                probs[i] = 1;
-            } else {
-                probs[i] = 0;
-            }
-        }
+		for (int i = 0; i < 100; i++) {
+			if (i < queryRate) {
+				probs[i] = 1;
+			} else {
+				probs[i] = 0;
+			}
+		}
 
-        Collections.shuffle(Arrays.asList(probs));
-    }
+		Collections.shuffle(Arrays.asList(probs));
+	}
 
-    public void setRepository(MembershipRepository repository) {
-        this.repository = repository;
-    }
+	public void setRepository(MembershipRepository repository) {
+		this.repository = repository;
+	}
 
-    public MembershipRepository getRepository() {
-        return repository;
-    }
+	public MembershipRepository getRepository() {
+		return repository;
+	}
 
-    private void init() {
-        latencies = new ArrayList();
+	private void init() {
+		latencies = new ArrayList();
 
-        this.initDiscoveryListening();
-    }
+		this.initDiscoveryListening();
+	}
 
-    private void initDiscoveryListening() {
-        // makes helloReceived catch Hello messages
-        this.registerHelloListening();
+	private void initDiscoveryListening() {
+		// makes helloReceived catch Hello messages
+		this.registerHelloListening();
 
 
-        // Register client for service reference changes
-        this.registerServiceListening();
-    }
+		// Register client for service reference changes
+		this.registerServiceListening();
+	}
 
-    private boolean decideQuery() {
-        int index = random.nextInt(100);
+	private boolean decideQuery() {
+		int index = random.nextInt(100);
 
-        return (probs[index] == 1);
-    }
+		return (probs[index] == 1);
+	}
 
-    /**
-     * Callback method, if device hello was received
-     * @param hd
-     */
-    @Override
-    public void helloReceived(HelloData hd) {
-        // for now only considers hello messages coming from devices
-        boolean query = decideQuery();
+	/**
+	 * Callback method, if device hello was received
+	 * @param hd
+	 */
+	@Override
+	public void helloReceived(HelloData hd) {
+		// for now only considers hello messages coming from devices
+		boolean query = decideQuery();
 
-        if (query) {
-            // if device announced Gossip or MembershipType or if, according to configuration, it is supposed to be queried
-            DeviceReference deviceRef = getDeviceReference(hd);
-            addDeviceToRepository(deviceRef);
-        }
-    }
+		if (query) {
+			// if device announced Gossip or MembershipType or if, according to configuration, it is supposed to be queried
+			DeviceReference deviceRef = getDeviceReference(hd);
+			addDeviceToRepository(deviceRef);
+		}
+	}
 
-    @Override
-    public void deviceFound(DeviceReference devRef, SearchParameter searchParams) {
-        logger.debug(idStr + "Found Device with Reference " + devRef.getEndpointReference());
+	@Override
+	public void deviceFound(DeviceReference devRef, SearchParameter searchParams) {
+		logger.debug(idStr + "Found Device with Reference " + devRef.getEndpointReference());
 
-        addDeviceToRepository(devRef);
-    }
+		addDeviceToRepository(devRef);
+	}
 
-    @Override
-    public void serviceFound(ServiceReference sr, SearchParameter sp) {
-        logger.debug(idStr + "Client found service with ID: " + sr.getServiceId());
+	@Override
+	public void serviceFound(ServiceReference sr, SearchParameter sp) {
+		logger.debug(idStr + "Client found service with ID: " + sr.getServiceId());
 
-        Iterator iter = sr.getPortTypes();
-        boolean matchType = false;
+		Iterator iter = sr.getPortTypes();
+		boolean matchType = false;
 
-        while (iter.hasNext() && !matchType) {
-            QName portType = (QName) iter.next();
-            matchType = Constants.MembershipPortTypeQName.equals(portType)
-                    || Constants.GossipPushPortQName.equals(portType);
-        }
+		while (iter.hasNext() && !matchType) {
+			QName portType = (QName) iter.next();
+			matchType = Constants.MembershipPortTypeQName.equals(portType)
+					|| Constants.GossipPushPortQName.equals(portType);
+		}
 
-        if (matchType) {
-            try {
-                Service svc = sr.getService();
-                DeviceReference devRef = svc.getParentDeviceReference();
-                logger.debug(idStr + "Device " + devRef.getEndpointReference().getAddress() + " being added.");
-                repository.addDeviceInfo(devRef.getDevice());
-            } catch (TimeoutException ex) {
-                logger.error(idStr + ex.getMessage(), ex);
-            }
-        }
-    }
+		if (matchType) {
+			try {
+				Service svc = sr.getService();
+				DeviceReference devRef = svc.getParentDeviceReference();
+				logger.debug(idStr + "Device " + devRef.getEndpointReference().getAddress() + " being added.");
+				repository.addDeviceInfo(devRef.getDevice());
+			} catch (TimeoutException ex) {
+				logger.error(idStr + ex.getMessage(), ex);
+			}
+		}
+	}
 
-    @Override
-    public void deviceBye(DeviceReference devRef) {
-        // Remove device and hosted services from repository
-        repository.removeDeviceInfo(devRef);
-    }
+	@Override
+	public void deviceBye(DeviceReference devRef) {
+		// Remove device and hosted services from repository
+		repository.removeDeviceInfo(devRef);
+	}
 
-    @Override
-    public void serviceDisposed(ServiceReference sr) {
-        URI serviceAddress = sr.getPreferredXAddress();
-        if (serviceAddress == null) {
-            Iterator iter = sr.getEndpointReferences();
-            while (iter.hasNext()) {
-                serviceAddress = ((EndpointReference) iter.next()).getAddress();
-            }
-        }
+	@Override
+	public void serviceDisposed(ServiceReference sr) {
+		URI serviceAddress = sr.getPreferredXAddress();
+		if (serviceAddress == null) {
+			Iterator iter = sr.getEndpointReferences();
+			while (iter.hasNext()) {
+				serviceAddress = ((EndpointReference) iter.next()).getAddress();
+			}
+		}
 
-        if (serviceAddress != null) {
-            repository.removeServiceInfo(serviceAddress);
-        }
-    }
+		if (serviceAddress != null) {
+			repository.removeServiceInfo(serviceAddress);
+		}
+	}
 
-    public Device getDevice(URI devRef) {
-        Device dvc = null;
-        try {
-            dvc = getDeviceReference(new EndpointReference(devRef)).getDevice();
-        } catch (TimeoutException ex) {
-            logger.error(idStr + ex.getMessage(), ex);
-        }
+	public Device getDevice(URI devRef) {
+		Device dvc = null;
+		try {
+			dvc = getDeviceReference(new EndpointReference(devRef)).getDevice();
+		} catch (TimeoutException ex) {
+			logger.error(idStr + ex.getMessage(), ex);
+		}
 
-        return dvc;
-    }
+		return dvc;
+	}
 
-    public void initUpdate() {
-        try {
-            // selects update target membership service randomly from repository
-            URI updateTarget = repository.selectUpdateTarget();
+	public void initUpdate() {
+		try {
+			// selects update target membership service randomly from repository
+			URI updateTarget = repository.selectUpdateTarget();
 
-            if (updateTarget != null) {
-                Operation updateOperation = null;
-                ParameterValue updateRequest;
-                try {
-                    // instantiates service
-                    EndpointReference epr = new EndpointReference(updateTarget);
-                    ServiceReference sr = getServiceReference(epr);
-                    Service svc = sr.getService();
-                    updateOperation = svc.getAnyOperation(Constants.MembershipPortTypeQName, "Update");
-                } catch (TimeoutException ex) {
-                    logger.error(idStr + ex.getMessage(), ex);
-                } catch (Exception ex) {
-                    logger.error(idStr + ex.getMessage(), ex);
-                }
+			if (updateTarget != null) {
+				Operation updateOperation = null;
+				ParameterValue updateRequest;
+				try {
+					// instantiates service
+					EndpointReference epr = new EndpointReference(updateTarget);
+					ServiceReference sr = getServiceReference(epr);
+					Service svc = sr.getService();
+					updateOperation = svc.getAnyOperation(Constants.MembershipPortTypeQName, "Update");
+				} catch (TimeoutException ex) {
+					logger.error(idStr + ex.getMessage(), ex);
+				} catch (Exception ex) {
+					logger.error(idStr + ex.getMessage(), ex);
+				}
 
-                // Invoke update op
-                if (updateOperation != null) {
-                    try {
-                        updateRequest = updateOperation.createInputValue();
+				// Invoke update op
+				if (updateOperation != null) {
+					try {
+						updateRequest = updateOperation.createInputValue();
 
-                        logger.debug(idStr + "Going to invoke Update op at " + updateTarget);
+						logger.debug(idStr + "Going to invoke Update op at " + updateTarget);
 
-                        updateRequest = ServiceInfo.fromServiceInfoListToPV(repository.preUpdateList(), updateRequest);
+						updateRequest = ServiceInfo.fromServiceInfoListToPV(repository.preUpdateList(), updateRequest);
 
-                        long start = System.nanoTime();
-                        ParameterValue updateResponse = updateOperation.invoke(updateRequest);
-                        long end = System.nanoTime();
+						long start = System.nanoTime();
+						ParameterValue updateResponse = updateOperation.invoke(updateRequest);
+						long end = System.nanoTime();
 
-                        latencies.add(end - start);
+						latencies.add(end - start);
 
-                        // received list is merged with repository
-                        if (updateResponse == null) {
-                            logger.error(idStr + "Update Response is null!");
-                        } else {
-                            repository.merge(ServiceInfo.fromPVToServiceInfoList(updateResponse));
-                        }
-                    } catch (InvocationException ex) {
-                        logger.error(idStr + ex.getMessage(), ex);
-                    } catch (TimeoutException ex) {
-                        logger.error(idStr + ex.getMessage(), ex);
-                    } catch (Exception ex) {
-                        logger.error(idStr + ex.getMessage(), ex);
-                    }
-                } else {
-                    logger.error(idStr + "No Update operation found for target " + updateTarget);
-                }
+						// received list is merged with repository
+						if (updateResponse == null) {
+							logger.error(idStr + "Update Response is null!");
+						} else {
+							repository.merge(ServiceInfo.fromPVToServiceInfoList(updateResponse));
+						}
+					} catch (InvocationException ex) {
+						logger.error(idStr + ex.getMessage(), ex);
+					} catch (TimeoutException ex) {
+						logger.error(idStr + ex.getMessage(), ex);
+					} catch (Exception ex) {
+						logger.error(idStr + ex.getMessage(), ex);
+					}
+				} else {
+					logger.error(idStr + "No Update operation found for target " + updateTarget);
+				}
 
-            } else {
-                logger.error(idStr + "No update target found!" + repository.toString());
+			} else {
+				logger.error(idStr + "No update target found!" + repository.toString());
 
-                // there is no service in repository so search for a membership service
-                SearchParameter param = new SearchParameter();
-                QNameSet qns = new QNameSet(Constants.MembershipPortTypeQName);
-                param.setServiceTypes(qns);
+				// there is no service in repository so search for a membership service
+				SearchParameter param = new SearchParameter();
+				QNameSet qns = new QNameSet(Constants.MembershipPortTypeQName);
+				param.setServiceTypes(qns);
 
-                searchService(param);
-            }
+				searchService(param);
+			}
 
-        } catch (Exception e) {
-            logger.error(idStr + e.getMessage(), e);
-        }
+		} catch (Exception e) {
+			logger.error(idStr + e.getMessage(), e);
+		}
 
-    }
+	}
 
-    private void addDeviceToRepository(DeviceReference devRef) {
-        EndpointReference ownDvcEPR = repository.getDevice().getEndpointReference();
+	private void addDeviceToRepository(DeviceReference devRef) {
+		EndpointReference ownDvcEPR = repository.getDevice().getEndpointReference();
 
-        if (!ownDvcEPR.equals(devRef.getEndpointReference())) {
-            try {
-                Device dvc = devRef.getDevice();
-                repository.addDeviceInfo(dvc);
+		if (!ownDvcEPR.equals(devRef.getEndpointReference())) {
+			try {
+				Device dvc = devRef.getDevice();
+				repository.addDeviceInfo(dvc);
 
-            } catch (TimeoutException ex) {
-                logger.error(idStr + ex.getMessage(), ex);
-            }
-        }
-    }
+			} catch (TimeoutException ex) {
+				logger.error(idStr + ex.getMessage(), ex);
+			}
+		}
+	}
 
-    public void writeStats() {
-        int size = latencies.size();
+	public void writeStats() {
+		int size = latencies.size();
 
-        if (size > 0) {
-            // process latencies
-            long minLat;
-            long maxLat;
-            long sumLat;
-            minLat = maxLat = sumLat = (Long) latencies.get(0);
-            for (int i = 1; i < size; i++) {
-                long currentLat = (Long) latencies.get(i);
-                if (currentLat < minLat) {
-                    minLat = currentLat;
-                }
-                if (currentLat > maxLat) {
-                    maxLat = currentLat;
-                }
-                sumLat += currentLat;
-            }
+		if (size > 0) {
+			// process latencies
+			long minLat;
+			long maxLat;
+			long sumLat;
+			minLat = maxLat = sumLat = (Long) latencies.get(0);
+			for (int i = 1; i < size; i++) {
+				long currentLat = (Long) latencies.get(i);
+				if (currentLat < minLat) {
+					minLat = currentLat;
+				}
+				if (currentLat > maxLat) {
+					maxLat = currentLat;
+				}
+				sumLat += currentLat;
+			}
 
-            String port = "unknown";
-            if (device != null) {
-                port = device.getPort();
-                FileWriter fw = device.getFileWriter();
-                synchronized (fw) {
-                    try {
-                        fw.write(port + ";" + size + ";" + minLat + ";" + maxLat + ";" + sumLat + "\n");
-                        fw.flush();
-                    } catch (IOException ex) {
-                        logger.error(idStr + ex.getMessage(), ex);
-                    }
-                }
+			String port = "unknown";
+			if (device != null) {
+				port = device.getPort();
+				FileWriter fw = device.getFileWriter();
+				synchronized (fw) {
+					try {
+						fw.write(port + ";" + size + ";" + minLat + ";" + maxLat + ";" + sumLat + "\n");
+						fw.flush();
+					} catch (IOException ex) {
+						logger.error(idStr + ex.getMessage(), ex);
+					}
+				}
 
-            }
+			}
 
-            logger.info(idStr + "Svc Port:" + port + "; Num Updates=" + size + "; Latency (ms) - Min=" + minLat + "; Max=" + maxLat + "; Sum=" + sumLat + "\n");
-        } else {
-            logger.info(idStr + "There are no latencies stored!");
-        }
-    }
+			logger.info(idStr + "Svc Port:" + port + "; Num Updates=" + size + "; Latency (ms) - Min=" + minLat + "; Max=" + maxLat + "; Sum=" + sumLat + "\n");
+		} else {
+			logger.info(idStr + "There are no latencies stored!");
+		}
+	}
 
-    public static void main(String[] args) {
-        DPWSFramework.start(args);
-        MembershipRepositoryClient client = null;
+	public static void main(String[] args) {
+		DPWSFramework.start(args);
+		MembershipRepositoryClient client = null;
 
-        try {
-            client = new MembershipRepositoryClient();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            if (client != null) {
-                logger.warn("Shutting down...");
-            }
+		try {
+			client = new MembershipRepositoryClient();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			if (client != null) {
+				logger.warn("Shutting down...");
+			}
 
-            DPWSFramework.stop();
-            System.exit(0);
-        }
+			DPWSFramework.stop();
+			System.exit(0);
+		}
 
-    }
+	}
 }

@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -24,7 +39,6 @@ public abstract class Constants {
 
 
     public final static String NameSpace = "http://gsd.di.uminho.pt/ws/2010/06/gossip";
-//    public final static String AggregationNameSpace  = "http://gsd.di.uminho.pt/ws/2011/07/aggregation";
 
     // Aggregation Service
     public final static String AggregationServiceName = "AggregationService";
@@ -161,19 +175,15 @@ public abstract class Constants {
 
     public final static String MessageElementName = "Message";
     public final static QName MessageElementQName = new QName(MessageElementName, NameSpace);
-//    public final static QName AggMessageElementQName = new QName(MessageElementName, AggregationNameSpace);
 
     public final static String RoundsElementName = "Rounds";
     public final static QName RoundsElementQName = new QName(RoundsElementName, NameSpace);
-//    public final static QName AggRoundsElementQName = new QName(RoundsElementName, AggregationNameSpace);
 
     public final static String MessageIdentifierElementName = "Id";
     public final static QName MessageIdentifierElementQName = new QName(MessageIdentifierElementName, NameSpace);
-//    public final static QName AggMessageIdentifierElementQName = new QName(MessageIdentifierElementName, AggregationNameSpace);
 
     public final static String ActionElementName = "Action";
     public final static QName ActionElementQName = new QName(ActionElementName, NameSpace);
-//    public final static QName AggActionElementQName = new QName(ActionElementName, AggregationNameSpace);
 
     // Pull Operation
     public final static String PullOperationName = "Pull";

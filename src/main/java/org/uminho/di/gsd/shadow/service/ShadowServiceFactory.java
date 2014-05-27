@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package org.uminho.di.gsd.shadow.service;
 
 import java.io.IOException;
@@ -16,138 +31,138 @@ import org.ws4d.java.types.QName;
 
 public class ShadowServiceFactory {
 
-    static Logger logger = Logger.getLogger(ShadowServiceFactory.class);
+	static Logger logger = Logger.getLogger(ShadowServiceFactory.class);
 
-    final static java.util.ArrayList<QName> reservedPortTypes;
+	final static java.util.ArrayList<QName> reservedPortTypes;
 
-    static {
-        reservedPortTypes = new java.util.ArrayList<QName>();
-        reservedPortTypes.add(Constants.GossipPushPortQName);
-        reservedPortTypes.add(Constants.GossipPullPortQName);
-        reservedPortTypes.add(Constants.GossipLazyPortQName);
-        reservedPortTypes.add(Constants.AggregationPortQName);
-        reservedPortTypes.add(Constants.MembershipPortTypeQName);
-        reservedPortTypes.add(Constants.ManagementPortQName);
-    }
+	static {
+		reservedPortTypes = new java.util.ArrayList<QName>();
+		reservedPortTypes.add(Constants.GossipPushPortQName);
+		reservedPortTypes.add(Constants.GossipPullPortQName);
+		reservedPortTypes.add(Constants.GossipLazyPortQName);
+		reservedPortTypes.add(Constants.AggregationPortQName);
+		reservedPortTypes.add(Constants.MembershipPortTypeQName);
+		reservedPortTypes.add(Constants.ManagementPortQName);
+	}
 
-    public static HashMap indexAndReplicateNormalServicesOperations(BasicDevice device, GossipService gossipService)
-    {
-        HashMap indexedOps = new HashMap();
-        List services = new ArrayList();
-        Iterator servicesIter = device.getServices();
+	public static HashMap indexAndReplicateNormalServicesOperations(BasicDevice device, GossipService gossipService)
+	{
+		HashMap indexedOps = new HashMap();
+		List services = new ArrayList();
+		Iterator servicesIter = device.getServices();
 
-        boolean createShadow = gossipService.isActivateShadowService();
+		boolean createShadow = gossipService.isActivateShadowService();
 
-        while(servicesIter.hasNext())
-        {
-            LocalService tempService = (LocalService) servicesIter.next();
+		while(servicesIter.hasNext())
+		{
+			LocalService tempService = (LocalService) servicesIter.next();
 
-            if(isNormalService(tempService))
-            {
-                Iterator operationsIter = tempService.getOperations();
+			if(isNormalService(tempService))
+			{
+				Iterator operationsIter = tempService.getOperations();
 
-                while(operationsIter.hasNext())
-                {
-                    Operation op = (Operation) operationsIter.next();
-                    String opInputAction = op.getInputAction();
+				while(operationsIter.hasNext())
+				{
+					Operation op = (Operation) operationsIter.next();
+					String opInputAction = op.getInputAction();
 
-                    logger.debug("Indexing operation with key " + opInputAction);
+					logger.debug("Indexing operation with key " + opInputAction);
 
-                    indexedOps.put(opInputAction, op);
-                }
+					indexedOps.put(opInputAction, op);
+				}
 
 
-                if(createShadow)
-                {
-                    // creating shadow service
-                    ShadowService shadowService = new ShadowService(device, gossipService, tempService);
-                    if(shadowService != null)
-                    {
-                        shadowService.initialize();
-                        services.add(shadowService);
-                    }
-                }
-            }
-        }
+				if(createShadow)
+				{
+					// creating shadow service
+					ShadowService shadowService = new ShadowService(device, gossipService, tempService);
+					if(shadowService != null)
+					{
+						shadowService.initialize();
+						services.add(shadowService);
+					}
+				}
+			}
+		}
 
-        gossipService.setIndexedOps(indexedOps);
+		gossipService.setIndexedOps(indexedOps);
 
-        logger.debug("Finished indexing normal services' operations!");
+		logger.debug("Finished indexing normal services' operations!");
 
-        if(createShadow)
-        {
-            logger.debug("Finished replicating normal services!");
+		if(createShadow)
+		{
+			logger.debug("Finished replicating normal services!");
 
-            servicesIter = services.iterator();
-            while(servicesIter.hasNext())
-            {
-                ShadowService tempService = (ShadowService) servicesIter.next();
-                try {
-                    device.addService(tempService, true);
-                } catch(IOException ex)
-                {
-                    logger.error(ex.getMessage(), ex);
-                }
-            }
+			servicesIter = services.iterator();
+			while(servicesIter.hasNext())
+			{
+				ShadowService tempService = (ShadowService) servicesIter.next();
+				try {
+					device.addService(tempService, true);
+				} catch(IOException ex)
+				{
+					logger.error(ex.getMessage(), ex);
+				}
+			}
 
-            logger.debug("Finished adding replicated services!");
-        }
+			logger.debug("Finished adding replicated services!");
+		}
 
-        return indexedOps;
-    }
+		return indexedOps;
+	}
 
-    public static List replicateNormalServices(BasicDevice device, GossipService gossipService)
-    {
-        List services = new ArrayList();
-        Iterator servicesIter = device.getServices();
+	public static List replicateNormalServices(BasicDevice device, GossipService gossipService)
+	{
+		List services = new ArrayList();
+		Iterator servicesIter = device.getServices();
 
-        while(servicesIter.hasNext())
-        {
-            LocalService tempService = (LocalService) servicesIter.next();
+		while(servicesIter.hasNext())
+		{
+			LocalService tempService = (LocalService) servicesIter.next();
 
-            if(isNormalService(tempService))
-            {
-                ShadowService shadowService = new ShadowService(device, gossipService, tempService);
-                if(shadowService != null)
-                {
-                    shadowService.initialize();
-                    services.add(shadowService);
-                }
-            }
-        }
+			if(isNormalService(tempService))
+			{
+				ShadowService shadowService = new ShadowService(device, gossipService, tempService);
+				if(shadowService != null)
+				{
+					shadowService.initialize();
+					services.add(shadowService);
+				}
+			}
+		}
 
-        logger.debug("Finished replicating normal services!");
+		logger.debug("Finished replicating normal services!");
 
-        servicesIter = services.iterator();
-        while(servicesIter.hasNext())
-        {
-            ShadowService tempService = (ShadowService) servicesIter.next();
-            try {
-                device.addService(tempService, true);
-            } catch(IOException ex)
-            {
-                logger.error(ex.getMessage(), ex);
-            }
-        }
+		servicesIter = services.iterator();
+		while(servicesIter.hasNext())
+		{
+			ShadowService tempService = (ShadowService) servicesIter.next();
+			try {
+				device.addService(tempService, true);
+			} catch(IOException ex)
+			{
+				logger.error(ex.getMessage(), ex);
+			}
+		}
 
-        logger.debug("Finished adding replicated services!");
+		logger.debug("Finished adding replicated services!");
 
-        return services;
-    }
+		return services;
+	}
 
-    private static boolean isNormalService(Service svc)
-    {
-        boolean normal = true;
-        Iterator portTypes = svc.getPortTypes();
+	private static boolean isNormalService(Service svc)
+	{
+		boolean normal = true;
+		Iterator portTypes = svc.getPortTypes();
 
-        while(normal && portTypes.hasNext())
-        {
-            QName portType = (QName) portTypes.next();
+		while(normal && portTypes.hasNext())
+		{
+			QName portType = (QName) portTypes.next();
 
-            normal = !reservedPortTypes.contains(portType);
-            logger.debug("PortType:" + portType + " normal? " + normal);
-        }
+			normal = !reservedPortTypes.contains(portType);
+			logger.debug("PortType:" + portType + " normal? " + normal);
+		}
 
-        return normal;
-    }
+		return normal;
+	}
 }

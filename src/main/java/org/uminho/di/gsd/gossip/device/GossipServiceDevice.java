@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 
 package org.uminho.di.gsd.gossip.device;
 
@@ -14,76 +25,70 @@ import org.ws4d.java.communication.HTTPBinding;
 import org.ws4d.java.service.Service;
 import org.ws4d.java.types.URI;
 
-/**
- *
- * @author fjoc
- */
 public class GossipServiceDevice extends BasicDevice implements GossipDevice {
-    static Logger logger = Logger.getLogger(GossipServiceDevice.class);
+	static Logger logger = Logger.getLogger(GossipServiceDevice.class);
 
-    protected GossipService gossipService;
-    
-    public void initializeGossipService() {
-        gossipService = new GossipService();
-        gossipService.addBinding(new HTTPBinding(new URI("http://" + IP + ":" + PORT + "/gossip/service")));
+	protected GossipService gossipService;
 
-        this.addService(gossipService);
-    }
+	public void initializeGossipService() {
+		gossipService = new GossipService();
+		gossipService.addBinding(new HTTPBinding(new URI("http://" + IP + ":" + PORT + "/gossip/service")));
 
-    @Override
-    public void startDevice() {
-        this.startGossipService();
+		this.addService(gossipService);
+	}
 
-        super.startDevice();
-    }
+	@Override
+	public void startDevice() {
+		this.startGossipService();
 
-    private void startGossipService() {
-        try {
-            gossipService.start();
-        } catch (IOException ex) {
-            logger.error(idStr + ex.getMessage(), ex);
-        }
-    }
+		super.startDevice();
+	}
 
-    @Override
-    public GossipService getGossipService() {
-        return gossipService;
-    }
+	private void startGossipService() {
+		try {
+			gossipService.start();
+		} catch (IOException ex) {
+			logger.error(idStr + ex.getMessage(), ex);
+		}
+	}
 
-    /**
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-        // always start the framework first
-        DPWSFramework.start(args);
+	@Override
+	public GossipService getGossipService() {
+		return gossipService;
+	}
 
-        // create a simple device ...
-        GossipServiceDevice device = new GossipServiceDevice();
-        device.initializeBinding();
+	/**
+	 * @param args
+	 * @throws Exception
+	 */
+	 public static void main(String[] args) throws Exception {
+		 // always start the framework first
+		 DPWSFramework.start(args);
 
-        // ... and a service
-        device.initializeGossipService();
+		 // create a simple device ...
+		 GossipServiceDevice device = new GossipServiceDevice();
+		 device.initializeBinding();
 
-        // add service to device in order to support automatic discovery ...
-        device.startDevice();
+		 // ... and a service
+		 device.initializeGossipService();
 
-//        DPWSFramework.stop();
-    }
+		 // add service to device in order to support automatic discovery ...
+		 device.startDevice();
+	 }
 
-    @Override
-    public void setMonitoringMembershipService(Service svc) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+	 @Override
+	 public void setMonitoringMembershipService(Service svc) {
+		 throw new UnsupportedOperationException("Not supported yet.");
+	 }
 
-    @Override
-    public Service getMonitoringMembershipService() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+	 @Override
+	 public Service getMonitoringMembershipService() {
+		 throw new UnsupportedOperationException("Not supported yet.");
+	 }
 
-    @Override
-    public void initializeWorkers()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+	 @Override
+	 public void initializeWorkers()
+	 {
+		 throw new UnsupportedOperationException("Not supported yet.");
+	 }
 }

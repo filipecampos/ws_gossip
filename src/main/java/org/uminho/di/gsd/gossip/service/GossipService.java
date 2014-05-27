@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package org.uminho.di.gsd.gossip.service;
 
 import java.io.IOException;
@@ -36,291 +51,288 @@ import org.ws4d.java.util.IDGenerator;
 
 public class GossipService extends DefaultService {
 
-    static Logger logger = Logger.getLogger(GossipService.class);
+	static Logger logger = Logger.getLogger(GossipService.class);
 
-    private GossipVariants activeVariant;
-    private CommunicationProtocol protocol;
+	private GossipVariants activeVariant;
+	private CommunicationProtocol protocol;
 
-    private BasicDevice device;
+	private BasicDevice device;
 
-    protected ApplicationService appService;
-    
-    // my binding uri
-    protected String svcEPR;
+	protected ApplicationService appService;
 
-    // operations
-    protected PushOperation pushOp;
-    
-    protected PullOperation pullOp;
-//    protected PullSyncOperation pullSyncOp;
+	// my binding uri
+	protected String svcEPR;
 
-    protected PushPullOperation pushPullOp;
+	// operations
+	protected PushOperation pushOp;
 
-    protected PullIdsOperation pullIdsOp;
-//    protected PullIdsSyncOperation pullIdsSyncOp;
-    
-    protected FetchOperation fetchOp;
-//    protected FetchSyncOperation fetchSyncOp;
+	protected PullOperation pullOp;
 
-    protected PushIdsOperation pushIdsOp;
+	protected PushPullOperation pushPullOp;
 
-    // Aggregation
-    protected AggPushOperation aggPushOp;
-    protected AggPullOperation aggPullOp;
-    protected AggOperation aggOp;
-    
-    // message processor
-    protected MessagesProcessor processor;
+	protected PullIdsOperation pullIdsOp;
 
-    // gossip client
-    protected GossipClient client;
+	protected FetchOperation fetchOp;
 
-    int port;
+	protected PushIdsOperation pushIdsOp;
 
-    private Boolean activateShadowService = false;
-    private List shadowServices;
-    private HashMap indexedOps;
+	// Aggregation
+	protected AggPushOperation aggPushOp;
+	protected AggPullOperation aggPullOp;
+	protected AggOperation aggOp;
 
-    public void setIndexedOps(HashMap ops)
-    {
-        indexedOps = ops;
-    }
+	// message processor
+	protected MessagesProcessor processor;
 
-    public Boolean isActivateShadowService() {
-        return activateShadowService;
-    }
+	// gossip client
+	protected GossipClient client;
 
-    public void setActivateShadowService(Boolean activateShadowService) {
-        this.activateShadowService = activateShadowService;
-    }
+	int port;
 
-    public GossipService() {
-        super();
+	private Boolean activateShadowService = false;
+	private List shadowServices;
+	private HashMap indexedOps;
 
-        activeVariant = GossipVariants.Push;
+	public void setIndexedOps(HashMap ops)
+	{
+		indexedOps = ops;
+	}
 
-        this.setServiceId(new URI("GossipService"));
+	public Boolean isActivateShadowService() {
+		return activateShadowService;
+	}
 
-        initializeProcessor();
+	public void setActivateShadowService(Boolean activateShadowService) {
+		this.activateShadowService = activateShadowService;
+	}
 
-        initializeOperations();
-    }
+	public GossipService() {
+		super();
 
-    public void setDevice(BasicDevice device)
-    {
-        this.device = device;
-        logger.debug("GossipService: Device is set!");
-        
-        if(logger.isDebugEnabled())
-            device.inspectServicesAndOperations();
-    }
+		activeVariant = GossipVariants.Push;
 
-    public void startShadowServices() throws IOException
-    {
-            if(device != null)
-            {
-                logger.debug("Replicating Device's Normal Services...");
-                ShadowServiceFactory.replicateNormalServices(device, this);
-                logger.debug("Replicated Device's Normal Services.");
+		this.setServiceId(new URI("GossipService"));
 
-                if(logger.isDebugEnabled())
-                    device.inspectServicesAndOperations();
-            }
-            else
-            {
-                logger.error("Device is null!");
-                return;
-            }
-    }
+		initializeProcessor();
 
-    public void stopShadowServices() throws IOException
-    {
-        if((shadowServices != null) && (!shadowServices.isEmpty()))
-        {
-            Iterator iter = shadowServices.listIterator();
-            while(iter.hasNext())
-            {
-                ShadowService svc = (ShadowService) iter.next();
-                svc.stop();
-            }
-        }
-    }
+		initializeOperations();
+	}
 
-    public GossipVariants getActiveVariant() {
-        return activeVariant;
-    }
+	public void setDevice(BasicDevice device)
+	{
+		this.device = device;
+		logger.debug("GossipService: Device is set!");
 
-    public void setActiveVariant(GossipVariants activeVariant) {
-        this.activeVariant = activeVariant;
-    }
+		if(logger.isDebugEnabled())
+			device.inspectServicesAndOperations();
+	}
 
-    public CommunicationProtocol getProtocol() {
-        return protocol;
-    }
+	public void startShadowServices() throws IOException
+	{
+		if(device != null)
+		{
+			logger.debug("Replicating Device's Normal Services...");
+			ShadowServiceFactory.replicateNormalServices(device, this);
+			logger.debug("Replicated Device's Normal Services.");
 
-    public void setProtocol(CommunicationProtocol protocol) {
-        this.protocol = protocol;
-    }
+			if(logger.isDebugEnabled())
+				device.inspectServicesAndOperations();
+		}
+		else
+		{
+			logger.error("Device is null!");
+			return;
+		}
+	}
 
-    public void setServiceEPR(String epr)
-    {
-        svcEPR = epr;
-    }
+	public void stopShadowServices() throws IOException
+	{
+		if((shadowServices != null) && (!shadowServices.isEmpty()))
+		{
+			Iterator iter = shadowServices.listIterator();
+			while(iter.hasNext())
+			{
+				ShadowService svc = (ShadowService) iter.next();
+				svc.stop();
+			}
+		}
+	}
 
-    public String getSvcEPR() {
-        return svcEPR;
-    }
+	public GossipVariants getActiveVariant() {
+		return activeVariant;
+	}
 
-    public ApplicationService getAppService() {
-        return appService;
-    }
+	public void setActiveVariant(GossipVariants activeVariant) {
+		this.activeVariant = activeVariant;
+	}
 
-    public void setAppService(ApplicationService appService) {
-        this.appService = appService;
-    }
+	public CommunicationProtocol getProtocol() {
+		return protocol;
+	}
 
-    protected void initializeProcessor()
-    {
-        processor = new MessagesProcessor(this);
-    }
+	public void setProtocol(CommunicationProtocol protocol) {
+		this.protocol = protocol;
+	}
 
-    public void setClient(GossipClient cli)
-    {
-        client = cli;
-        processor.setClient(client);
-        port = ((BasicDevice) client.getDevice()).getConstants().getPort();
-    }
-    
-    protected void initializeOperations() {
-        pushOp = new PushOperation();
-        pushOp.setProcessor(processor);
-        this.addOperation(pushOp);
+	public void setServiceEPR(String epr)
+	{
+		svcEPR = epr;
+	}
 
-        pullOp = new PullOperation();
-        pullOp.setProcessor(processor);
-        this.addOperation(pullOp);
+	public String getSvcEPR() {
+		return svcEPR;
+	}
 
-        pushPullOp = new PushPullOperation();
-        pushPullOp.setProcessor(processor);
-        this.addOperation(pushPullOp);
+	public ApplicationService getAppService() {
+		return appService;
+	}
 
-        pullIdsOp = new PullIdsOperation();
-        pullIdsOp.setProcessor(processor);
-        this.addOperation(pullIdsOp);
+	public void setAppService(ApplicationService appService) {
+		this.appService = appService;
+	}
 
-        fetchOp = new FetchOperation();
-        fetchOp.setProcessor(processor);
-        this.addOperation(fetchOp);
+	protected void initializeProcessor()
+	{
+		processor = new MessagesProcessor(this);
+	}
 
-        pushIdsOp = new PushIdsOperation();
-        pushIdsOp.setProcessor(processor);
-        this.addOperation(pushIdsOp);
+	public void setClient(GossipClient cli)
+	{
+		client = cli;
+		processor.setClient(client);
+		port = ((BasicDevice) client.getDevice()).getConstants().getPort();
+	}
 
-        aggPushOp = new AggPushOperation();
-        aggPushOp.setProcessor(processor);
-        this.addOperation(aggPushOp);
+	protected void initializeOperations() {
+		pushOp = new PushOperation();
+		pushOp.setProcessor(processor);
+		this.addOperation(pushOp);
 
-        aggPullOp = new AggPullOperation();
-        aggPullOp.setProcessor(processor);
-        this.addOperation(aggPullOp);
+		pullOp = new PullOperation();
+		pullOp.setProcessor(processor);
+		this.addOperation(pullOp);
 
-        aggOp = new AggOperation();
-        aggOp.setProcessor(processor);
-        this.addOperation(aggOp);
-    }
+		pushPullOp = new PushPullOperation();
+		pushPullOp.setProcessor(processor);
+		this.addOperation(pushPullOp);
 
-    public PushOperation getPushOperation() {
-        return pushOp;
-    }
+		pullIdsOp = new PullIdsOperation();
+		pullIdsOp.setProcessor(processor);
+		this.addOperation(pullIdsOp);
 
-    public PullOperation getPullOperation() {
-        return pullOp;
-    }
+		fetchOp = new FetchOperation();
+		fetchOp.setProcessor(processor);
+		this.addOperation(fetchOp);
 
-    public PushPullOperation getPushPullOperation() {
-        return pushPullOp;
-    }
+		pushIdsOp = new PushIdsOperation();
+		pushIdsOp.setProcessor(processor);
+		this.addOperation(pushIdsOp);
 
-    public PushIdsOperation getPushIdsOperation() {
-        return pushIdsOp;
-    }
+		aggPushOp = new AggPushOperation();
+		aggPushOp.setProcessor(processor);
+		this.addOperation(aggPushOp);
 
-    public PullIdsOperation getPullIdsOperation() {
-        return pullIdsOp;
-    }
+		aggPullOp = new AggPullOperation();
+		aggPullOp.setProcessor(processor);
+		this.addOperation(aggPullOp);
 
-    public FetchOperation getFetchOperation() {
-        return fetchOp;
-    }
+		aggOp = new AggOperation();
+		aggOp.setProcessor(processor);
+		this.addOperation(aggOp);
+	}
 
-    public void createMessage(int i) {
-        String element = "<InfoTemp>" + i + "</InfoTemp>";
+	public PushOperation getPushOperation() {
+		return pushOp;
+	}
 
-        long creationMillis = System.currentTimeMillis();
-        long creationNanos = System.nanoTime();
-        logger.debug("Creating message " + i + " at " + creationMillis);
-        Message msg = new Message(new URI(port + "-" + Integer.toString(i)), new URI(ApplicationServiceConstants.infoTempOpName), 3, element, creationMillis);
+	public PullOperation getPullOperation() {
+		return pullOp;
+	}
 
-        processor.addMessage(msg);
+	public PushPullOperation getPushPullOperation() {
+		return pushPullOp;
+	}
 
-        // store creation time instant
-        client.setSent(i, creationNanos);
-    }
+	public PushIdsOperation getPushIdsOperation() {
+		return pushIdsOp;
+	}
 
-    public AggPushOperation getAggPushOperation() {
-        return aggPushOp;
-    }
+	public PullIdsOperation getPullIdsOperation() {
+		return pullIdsOp;
+	}
 
-    public AggOperation getAggOperation() {
-        return aggOp;
-    }
+	public FetchOperation getFetchOperation() {
+		return fetchOp;
+	}
 
-    public AggPullOperation getAggPullOperation() {
-        return aggPullOp;
-    }
+	public void createMessage(int i) {
+		String element = "<InfoTemp>" + i + "</InfoTemp>";
 
-    public MessagesProcessor getProcessor() {
-        return processor;
-    }
+		long creationMillis = System.currentTimeMillis();
+		long creationNanos = System.nanoTime();
+		logger.debug("Creating message " + i + " at " + creationMillis);
+		Message msg = new Message(new URI(port + "-" + Integer.toString(i)), new URI(ApplicationServiceConstants.infoTempOpName), 3, element, creationMillis);
 
-    public void disseminateShadowInvocation(String actionName, ParameterValue parameterValue, long nanoTime, long millisTime) {
-        // always consider message as a new one
-        // create messageId
-        URI messageId = IDGenerator.getUUIDasURI();
-        logger.debug("Creating message " + messageId + " at " + millisTime);
-        XmlSerializer serializer = new XmlSerializerImplementation();
-        StringWriter writer = new StringWriter();
-        serializer.setOutput(writer);
-        try {
-            parameterValue.serialize(serializer);
-        } catch (IOException ex) {
-            logger.error(ex.getMessage(), ex);
-        }
-        String text = writer.toString();
-        logger.debug("Serialized pv: " + text);
+		processor.addMessage(msg);
 
-        
-        InfoTempOperation infoTempOp = new InfoTempOperation(appService);
-        ParameterValue newPV = infoTempOp.createInputValue();
+		// store creation time instant
+		client.setSent(i, creationNanos);
+	}
 
-        newPV.setValue(text);
-        logger.debug("Original pv: " + parameterValue);
-        logger.debug("Parsed serialized pv: " + newPV);
-        
-        Message msg = new Message(messageId, new URI(actionName), 3, text, millisTime);
+	public AggPushOperation getAggPushOperation() {
+		return aggPushOp;
+	}
 
-        // all variants: create and store message.
-        processor.addMessage(msg);
+	public AggOperation getAggOperation() {
+		return aggOp;
+	}
 
-        if(activeVariant == GossipVariants.Push)
-        {
-            // push: send message
-            client.firePush(msg);
-            logger.debug("Fired push for message " + msg);
-        }
+	public AggPullOperation getAggPullOperation() {
+		return aggPullOp;
+	}
 
-        // other variants: action will be called periodically and message will eventually be disseminated
-    }
+	public MessagesProcessor getProcessor() {
+		return processor;
+	}
 
-    
+	public void disseminateShadowInvocation(String actionName, ParameterValue parameterValue, long nanoTime, long millisTime) {
+		// always consider message as a new one
+		// create messageId
+		URI messageId = IDGenerator.getUUIDasURI();
+		logger.debug("Creating message " + messageId + " at " + millisTime);
+		XmlSerializer serializer = new XmlSerializerImplementation();
+		StringWriter writer = new StringWriter();
+		serializer.setOutput(writer);
+		try {
+			parameterValue.serialize(serializer);
+		} catch (IOException ex) {
+			logger.error(ex.getMessage(), ex);
+		}
+		String text = writer.toString();
+		logger.debug("Serialized pv: " + text);
+
+
+		InfoTempOperation infoTempOp = new InfoTempOperation(appService);
+		ParameterValue newPV = infoTempOp.createInputValue();
+
+		newPV.setValue(text);
+		logger.debug("Original pv: " + parameterValue);
+		logger.debug("Parsed serialized pv: " + newPV);
+
+		Message msg = new Message(messageId, new URI(actionName), 3, text, millisTime);
+
+		// all variants: create and store message.
+		processor.addMessage(msg);
+
+		if(activeVariant == GossipVariants.Push)
+		{
+			// push: send message
+			client.firePush(msg);
+			logger.debug("Fired push for message " + msg);
+		}
+
+		// other variants: action will be called periodically and message will eventually be disseminated
+	}
+
+
 }

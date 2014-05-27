@@ -1,10 +1,24 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+
 package org.uminho.di.gsd.membership.device;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.uminho.di.gsd.common.Configuration;
@@ -16,119 +30,113 @@ import org.uminho.di.gsd.membership.client.workers.UpdateTask;
 import org.uminho.di.gsd.membership.info.MembershipRepository;
 import org.ws4d.java.DPWSFramework;
 
-/**
- *
- * @author fcampos
- */
 public class MembershipClientDevice extends MembershipDevice {
-    static Logger logger = Logger.getLogger(MembershipClientDevice.class);
+	static Logger logger = Logger.getLogger(MembershipClientDevice.class);
 
-    protected MembershipRepositoryClient client;
+	protected MembershipRepositoryClient client;
 
-    public MembershipClientDevice() {
-        super();
-    }
+	private Object scheduledPool;
 
-    public MembershipRepositoryClient getClient() {
-        return client;
-    }
+	public MembershipClientDevice() {
+		super();
+	}
 
-    public void initializeClient(MembershipRepository repository) {
-        this.client = new MembershipRepositoryClient(repository);
-        repository.setClient(client);
-        this.client.setDevice(this);
-    }
+	public MembershipRepositoryClient getClient() {
+		return client;
+	}
 
-    public void initializeWorkers() {
-//        scheduledPool = new ScheduledThreadPoolExecutor(1);
+	public void initializeClient(MembershipRepository repository) {
+		this.client = new MembershipRepositoryClient(repository);
+		repository.setClient(client);
+		this.client.setDevice(this);
+	}
 
-        // service search
-//        initializeSearchTask();
+	public void initializeWorkers() {
+		//        scheduledPool = new ScheduledThreadPoolExecutor(1);
 
-        // membership update
-        initializeUpdateTask();
-    }
+		// service search
+		//        initializeSearchTask();
 
-    protected Long initializeUpdateTask() {
-        logger.debug(idStr + " Initializing Update task...");
-        
-        Random random = new Random();
-        Long initialWaitingPeriod = (Constants.numberOfDevices * 500) + Constants.updateInitialDelay + random.nextInt((int) Constants.updateInitialDelay);
-        Long period = (Long) Configuration.getConfigParamValue(Configuration.updatePeriod);
-        UpdateTask updateTask = new UpdateTask(client, initialWaitingPeriod, period);
-        DPWSFramework.getThreadPool().execute(updateTask);
-//        scheduledPool.scheduleWithFixedDelay(updateTask, initialWaitingPeriod, period, TimeUnit.MILLISECONDS);
+		// membership update
+		initializeUpdateTask();
+	}
 
-        return initialWaitingPeriod;
-    }
+	protected Long initializeUpdateTask() {
+		logger.debug(idStr + " Initializing Update task...");
 
-    protected void initializeSearchTask() {
-        SearchTask searchTask = new SearchTask(client);
-        long searchInitialDelay = 2;
-        long searchDelay = 5;
-//        scheduledPool.scheduleWithFixedDelay(searchTask, searchInitialDelay, searchDelay, TimeUnit.SECONDS);
-    }
+		Random random = new Random();
+		Long initialWaitingPeriod = (Constants.numberOfDevices * 500) + Constants.updateInitialDelay + random.nextInt((int) Constants.updateInitialDelay);
+		Long period = (Long) Configuration.getConfigParamValue(Configuration.updatePeriod);
+		UpdateTask updateTask = new UpdateTask(client, initialWaitingPeriod, period);
+		DPWSFramework.getThreadPool().execute(updateTask);
 
-    @Override
-    public void stopServices()
-    {
-        DPWSFramework.getThreadPool().shutdown();
-//        if(scheduledPool != null)
-//            scheduledPool.shutdown();
-        
-        client = null;
+		return initialWaitingPeriod;
+	}
 
-        super.stopServices();
-    }
+	protected void initializeSearchTask() {
+		SearchTask searchTask = new SearchTask(client);
+		// execute search once
+		DPWSFramework.getThreadPool().execute(searchTask);
+	}
 
-    /**
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-        if(args.length >= 2)
-        {
-            RunConstants constants = new RunConstants(args);
-            // configure loggers
-            PropertyConfigurator.configure("log4j.properties");
+	@Override
+	public void stopServices()
+	{
+		DPWSFramework.getThreadPool().shutdown();
 
-            MembershipClientDevice device = null;
+		client = null;
 
-            try {
-                // always start the framework first
-                DPWSFramework.start(args);
+		super.stopServices();
+	}
 
-                // create a simple device ...
-                device = new MembershipClientDevice();
-                device.setConstants(constants);
+	/**
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		if(args.length >= 2)
+		{
+			RunConstants constants = new RunConstants(args);
+			// configure loggers
+			PropertyConfigurator.configure("log4j.properties");
 
-                device.initializeConfiguration();
+			MembershipClientDevice device = null;
 
-                device.initializeBinding();
-                // ... and a service
-                device.initializeMembershipService();
+			try {
+				// always start the framework first
+				DPWSFramework.start(args);
 
-                device.startDevice();
+				// create a simple device ...
+				device = new MembershipClientDevice();
+				device.setConstants(constants);
 
-                // initialize repository
-                MembershipRepository repository = new MembershipRepository();
-                repository.initializeWithDevice(device);
+				device.initializeConfiguration();
 
-                device.getMembershipService().setRepository(repository);
+				device.initializeBinding();
+				// ... and a service
+				device.initializeMembershipService();
 
-                device.initializeClient(repository);
+				device.startDevice();
 
-                device.initializeWorkers();
+				// initialize repository
+				MembershipRepository repository = new MembershipRepository();
+				repository.initializeWithDevice(device);
 
-                repository = device.getMembershipService().getRepository();
-                if(repository == null)
-                    logger.error(device.getIdStr() + "Repository is null!");
-            } catch(Exception e)
-            {
-                logger.error(e.getMessage(), e);
+				device.getMembershipService().setRepository(repository);
 
-                DPWSFramework.stop();
-            }
-        }
-    }
+				device.initializeClient(repository);
+
+				device.initializeWorkers();
+
+				repository = device.getMembershipService().getRepository();
+				if(repository == null)
+					logger.error(device.getIdStr() + "Repository is null!");
+			} catch(Exception e)
+			{
+				logger.error(e.getMessage(), e);
+
+				DPWSFramework.stop();
+			}
+		}
+	}
 }

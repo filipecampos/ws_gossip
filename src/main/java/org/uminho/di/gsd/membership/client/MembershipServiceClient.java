@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package org.uminho.di.gsd.membership.client;
 
 import org.apache.log4j.Logger;
@@ -24,233 +39,233 @@ import org.ws4d.java.util.Log;
 
 public class MembershipServiceClient extends DefaultClient {
 
-    static Logger logger = Logger.getLogger(MembershipServiceClient.class);
+	static Logger logger = Logger.getLogger(MembershipServiceClient.class);
 
-    Service membershipService = null;
+	Service membershipService = null;
 
-    public MembershipServiceClient() {
-        this.init();
+	public MembershipServiceClient() {
+		this.init();
 
-    }
+	}
 
-    private void init() {
-        this.initDiscoveryListening();
-    }
+	private void init() {
+		this.initDiscoveryListening();
+	}
 
-    private void initDiscoveryListening() {
-        // makes helloReceived catch Hello messages
-        this.registerHelloListening();
+	private void initDiscoveryListening() {
+		// makes helloReceived catch Hello messages
+		this.registerHelloListening();
 
-        // Register client for service reference changes
-        this.registerServiceListening();
-    }
+		// Register client for service reference changes
+		this.registerServiceListening();
+	}
 
-    /**
-     * Callback method, if device hello was received
-     * @param hd
-     */
-    @Override
-    public void helloReceived(HelloData hd) {
-        // TODO: get query value
-        boolean query = true;
+	/**
+	 * Callback method, if device hello was received
+	 * @param hd
+	 */
+	@Override
+	public void helloReceived(HelloData hd) {
+		// TODO: get query value
+		boolean query = true;
 
-        EndpointReference endpointRef = hd.getEndpointReference();
+		EndpointReference endpointRef = hd.getEndpointReference();
 
-        logger.debug("Received Hello from " + endpointRef);
+		logger.debug("Received Hello from " + endpointRef);
 
 
-        ServiceReference svcRef;
-        Device device;
-        EndpointReference epr;
+		ServiceReference svcRef;
+		Device device;
+		EndpointReference epr;
 
-        // if device announced Gossip or MembershipType or if, according to configuration, it is supposed to be queried
-        if (query) {
-            try {
-                DeviceReference deviceRef = getDeviceReference(endpointRef);
-                device = deviceRef.getDevice();
-                DeviceInfo devInfo = new DeviceInfo(device);
-                logger.debug("Created devInfo with ref : " + devInfo.getEndpointReference());
-                Iterator services = null;
+		// if device announced Gossip or MembershipType or if, according to configuration, it is supposed to be queried
+		if (query) {
+			try {
+				DeviceReference deviceRef = getDeviceReference(endpointRef);
+				device = deviceRef.getDevice();
+				DeviceInfo devInfo = new DeviceInfo(device);
+				logger.debug("Created devInfo with ref : " + devInfo.getEndpointReference());
+				Iterator services = null;
 
-                services = device.getServiceReferences();
-                while (services.hasNext()) {
-                    svcRef = (ServiceReference) services.next();
-                    logger.debug("helloReceived:ServiceId " + svcRef.getServiceId());
-                    
-                    if(logger.isDebugEnabled())
-                    {
-                        ServiceInfo si = new ServiceInfo(svcRef, devInfo.getEndpointReference());
-                        logger.debug("Created ServiceInfo with preferredXAddress= " + si.getPreferredXAddress() + "; endpointAddresses: ");
-                    
-                        Iterator iterator = si.getEndpointAddresses().iterator();
-                        while(iterator.hasNext())
-                        {
-                            epr = (EndpointReference) iterator.next();
-                            logger.debug("EPR: " + epr);
-                        }
-                    }
+				services = device.getServiceReferences();
+				while (services.hasNext()) {
+					svcRef = (ServiceReference) services.next();
+					logger.debug("helloReceived:ServiceId " + svcRef.getServiceId());
 
-                    if (membershipService == null) {
-                        catchService(svcRef, Constants.MembershipServiceId);
-                    }
-                    if (membershipService != null) {
-                        useGetTargetsOperation();
-                    }
-                }
-            } catch (TimeoutException ex) {
-                logger.error(ex);
-            }
-        }
-    }
+					if(logger.isDebugEnabled())
+					{
+						ServiceInfo si = new ServiceInfo(svcRef, devInfo.getEndpointReference());
+						logger.debug("Created ServiceInfo with preferredXAddress= " + si.getPreferredXAddress() + "; endpointAddresses: ");
 
-    /**
-     * This method is called each time a service matching the initial search
-     * criteria (as contained within argument search) has been found
-     * @param sr
-     * @param sp
-     */
-    @Override
-    public void serviceFound(ServiceReference serviceRef, SearchParameter sp) {
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("Found Service with Id " + serviceRef.getServiceId());
+						Iterator iterator = si.getEndpointAddresses().iterator();
+						while(iterator.hasNext())
+						{
+							epr = (EndpointReference) iterator.next();
+							logger.debug("EPR: " + epr);
+						}
+					}
 
-            logger.debug("Search Parameter was...");
-            // devices
-            QNameSet dvcTypes = sp.getDeviceTypes();
-            if ((dvcTypes != null) && (!dvcTypes.isEmpty())) {
-                logger.debug("DeviceTypes:");
-                Iterator iterator = dvcTypes.iterator();
+					if (membershipService == null) {
+						catchService(svcRef, Constants.MembershipServiceId);
+					}
+					if (membershipService != null) {
+						useGetTargetsOperation();
+					}
+				}
+			} catch (TimeoutException ex) {
+				logger.error(ex);
+			}
+		}
+	}
 
-                while (iterator.hasNext()) {
-                    logger.debug(iterator.next());
-                }
-            }
+	/**
+	 * This method is called each time a service matching the initial search
+	 * criteria (as contained within argument search) has been found
+	 * @param sr
+	 * @param sp
+	 */
+	@Override
+	public void serviceFound(ServiceReference serviceRef, SearchParameter sp) {
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("Found Service with Id " + serviceRef.getServiceId());
 
-            // services
-            QNameSet svcTypes = sp.getServiceTypes();
-            if ((svcTypes != null) && (!svcTypes.isEmpty())) {
-                logger.debug("ServiceTypes:");
-                Iterator iterator = svcTypes.iterator();
+			logger.debug("Search Parameter was...");
+			// devices
+			QNameSet dvcTypes = sp.getDeviceTypes();
+			if ((dvcTypes != null) && (!dvcTypes.isEmpty())) {
+				logger.debug("DeviceTypes:");
+				Iterator iterator = dvcTypes.iterator();
 
-                while (iterator.hasNext()) {
-                    logger.debug(iterator.next());
-                }
-            }
-        }
+				while (iterator.hasNext()) {
+					logger.debug(iterator.next());
+				}
+			}
 
-        URI membershipSvcId = new URI("MembershipService");
+			// services
+			QNameSet svcTypes = sp.getServiceTypes();
+			if ((svcTypes != null) && (!svcTypes.isEmpty())) {
+				logger.debug("ServiceTypes:");
+				Iterator iterator = svcTypes.iterator();
 
-        if (serviceRef.getServiceId().equals(membershipSvcId)) {
-            catchService(serviceRef, membershipSvcId);
+				while (iterator.hasNext()) {
+					logger.debug(iterator.next());
+				}
+			}
+		}
 
-            // try our operations
-            useGetTargetsOperation();
-        }
-    }
+		URI membershipSvcId = new URI("MembershipService");
 
-    private void catchService(ServiceReference svcRef, URI svcId) {
-        if (svcRef.getServiceId().equals(svcId)) {
-            try {
-                membershipService = (Service) svcRef.getService();
-            } catch (TimeoutException e) {
-                logger.error(e);
-            }
+		if (serviceRef.getServiceId().equals(membershipSvcId)) {
+			catchService(serviceRef, membershipSvcId);
 
-            logger.debug("Found " + svcId);
-        } else {
-            logger.warn(svcRef.getServiceId() + " not equal to " + svcId);
-        }
+			// try our operations
+			useGetTargetsOperation();
+		}
+	}
 
-    }
+	private void catchService(ServiceReference svcRef, URI svcId) {
+		if (svcRef.getServiceId().equals(svcId)) {
+			try {
+				membershipService = (Service) svcRef.getService();
+			} catch (TimeoutException e) {
+				logger.error(e);
+			}
 
-    public void probe() {
-        // we define the service to search.
-        SearchParameter params = new SearchParameter();
-        params.setServiceTypes(new QNameSet(Constants.MembershipServiceQName));
+			logger.debug("Found " + svcId);
+		} else {
+			logger.warn(svcRef.getServiceId() + " not equal to " + svcId);
+		}
 
-        if (membershipService == null) {
-            searchService(params);
+	}
 
-            try {
-                Thread.sleep(3000);
-                logger.debug("Searching for MembershipService...");
+	public void probe() {
+		// we define the service to search.
+		SearchParameter params = new SearchParameter();
+		params.setServiceTypes(new QNameSet(Constants.MembershipServiceQName));
 
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage(), e);
-            }
+		if (membershipService == null) {
+			searchService(params);
 
-        }
-    }
+			try {
+				Thread.sleep(3000);
+				logger.debug("Searching for MembershipService...");
 
-    public void useGetTargetsOperation() {
-        Operation getTargetsOperation = null;
+			} catch (InterruptedException e) {
+				logger.error(e.getMessage(), e);
+			}
 
-        try {
-            //We need to get the operation from the service.
-            //getAnyOperation returns the first Operation that fits the specification in the parameters.
-            getTargetsOperation = membershipService.getAnyOperation(Constants.MembershipServiceQName, "GetTargets");
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            logger.error(ex.getMessage(), ex);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
+		}
+	}
 
-        if (getTargetsOperation != null) {
-            ParameterValue pValue = getTargetsOperation.createInputValue();
+	public void useGetTargetsOperation() {
+		Operation getTargetsOperation = null;
 
-            pValue.setValue("ServiceType", String.valueOf("Gossip"));
-            pValue.setValue("Fanout", String.valueOf(3));
+		try {
+			//We need to get the operation from the service.
+			//getAnyOperation returns the first Operation that fits the specification in the parameters.
+			getTargetsOperation = membershipService.getAnyOperation(Constants.MembershipServiceQName, "GetTargets");
+			Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+			logger.error(ex.getMessage(), ex);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
 
-            logger.debug("GetTargets invocation parameters set!");
+		if (getTargetsOperation != null) {
+			ParameterValue pValue = getTargetsOperation.createInputValue();
 
-            ParameterValue returnMessagePV = null;
-            //now lets invoke our first operation
-            try {
-                returnMessagePV = getTargetsOperation.invoke(pValue);
-                logger.debug("GetTargets invoked!");
+			pValue.setValue("ServiceType", String.valueOf("Gossip"));
+			pValue.setValue("Fanout", String.valueOf(3));
 
-            } catch (InvocationException e) {
-                logger.error(e.getMessage(), e);
-            } catch (TimeoutException e) {
-                logger.error(e.getMessage(), e);
-            }
+			logger.debug("GetTargets invocation parameters set!");
 
-            if (returnMessagePV != null) {
-                Iterator targets = returnMessagePV.getChildren("TargetsList");
+			ParameterValue returnMessagePV = null;
+			//now lets invoke our first operation
+			try {
+				returnMessagePV = getTargetsOperation.invoke(pValue);
+				logger.debug("GetTargets invoked!");
 
-                if (targets.hasNext()) {
-                    ParameterValue targetsList = (ParameterValue) targets.next();
+			} catch (InvocationException e) {
+				logger.error(e.getMessage(), e);
+			} catch (TimeoutException e) {
+				logger.error(e.getMessage(), e);
+			}
 
-                    logger.debug("TargetsList size " + targetsList.getChildrenCount("Endpoint"));
-                }
-                String firstTarget = returnMessagePV.getValue("TargetsList/Endpoint[0]");
+			if (returnMessagePV != null) {
+				Iterator targets = returnMessagePV.getChildren("TargetsList");
 
-                logger.debug("GetTargets returned " + firstTarget);
-            }
-        } else {
-            logger.debug("Operation is still null!");
-        }
+				if (targets.hasNext()) {
+					ParameterValue targetsList = (ParameterValue) targets.next();
 
-    }
+					logger.debug("TargetsList size " + targetsList.getChildrenCount("Endpoint"));
+				}
+				String firstTarget = returnMessagePV.getValue("TargetsList/Endpoint[0]");
 
-    public static void main(String[] args) {
-        DPWSFramework.start(args);
-        Log.setLogLevel(Log.DEBUG_LEVEL_INFO);
-        MembershipServiceClient client = null;
+				logger.debug("GetTargets returned " + firstTarget);
+			}
+		} else {
+			logger.debug("Operation is still null!");
+		}
 
-        try {
-            client = new MembershipServiceClient();
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            if (client != null) {
-                logger.warn("Shutting down...");
-            }
+	}
 
-            DPWSFramework.stop();
-            System.exit(0);
-        }
+	public static void main(String[] args) {
+		DPWSFramework.start(args);
+		Log.setLogLevel(Log.DEBUG_LEVEL_INFO);
+		MembershipServiceClient client = null;
 
-    }
+		try {
+			client = new MembershipServiceClient();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			if (client != null) {
+				logger.warn("Shutting down...");
+			}
+
+			DPWSFramework.stop();
+			System.exit(0);
+		}
+
+	}
 }

@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 
 package org.uminho.di.gsd.common;
 
@@ -19,10 +30,6 @@ import org.ws4d.java.structures.List;
 import org.ws4d.java.types.EndpointReference;
 import org.ws4d.java.types.URI;
 
-/**
- *
- * @author fjoc
- */
 public class MessageUtil {
 
     static Logger logger = Logger.getLogger(MessageUtil.class);
@@ -41,10 +48,6 @@ public class MessageUtil {
         pv.setValue(basicPrefix + Constants.RoundsElementName, Integer.toString(round));
         pv.setValue(basicPrefix + Constants.ActionElementName, actionName);
         pv.setValue(basicPrefix + Constants.MessageElementName, msg);
-
-//        im.setContent(pv);
-//        im.setInbound(false);
-//        im.setTargetAddress(new URI("udp://"+destAddress+":"+destPort));
 
         return pv;
     }

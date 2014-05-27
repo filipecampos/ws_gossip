@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Filipe Campos.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package org.uminho.di.gsd.application.service;
 
 import org.uminho.di.gsd.application.service.operations.GetTempOperation;
@@ -12,76 +27,76 @@ import org.ws4d.java.types.URI;
 
 public class ApplicationService extends DefaultService
 {
-    private String identifier;
+	private String identifier;
 
-    private InfoTempOperation infoTempOperation;
-    private GetTempOperation getTempOperation;
+	private InfoTempOperation infoTempOperation;
+	private GetTempOperation getTempOperation;
 
-    private double lastValue = -1.0;
+	private double lastValue = -1.0;
 
-    private double value = -1.0;
+	private double value = -1.0;
 
-    public ApplicationService()
-    {
-        super();
+	public ApplicationService()
+	{
+		super();
 
-        //the optional-to-set ServiceId
-        this.setServiceId(new URI(ApplicationServiceConstants.applicationServiceName));
-        infoTempOperation = new InfoTempOperation(this);
-        this.addOperation(infoTempOperation);
-        getTempOperation = new GetTempOperation(this);
-        this.addOperation(getTempOperation);
-    }
+		//the optional-to-set ServiceId
+		this.setServiceId(new URI(ApplicationServiceConstants.applicationServiceName));
+		infoTempOperation = new InfoTempOperation(this);
+		this.addOperation(infoTempOperation);
+		getTempOperation = new GetTempOperation(this);
+		this.addOperation(getTempOperation);
+	}
 
-    public ApplicationService(String id)
-    {
-        this();
+	public ApplicationService(String id)
+	{
+		this();
 
-        identifier = id;
-    }
+		identifier = id;
+	}
 
-    public double getValue() {
-        return value;
-    }
+	public double getValue() {
+		return value;
+	}
 
-    public void setValue(double value) {
-        this.value = value;
-    }
-    
-    public double getLastValue() {
-        if(lastValue == -1.0)
-            lastValue = value;
-        
-        return lastValue;
-    }
+	public void setValue(double value) {
+		this.value = value;
+	}
 
-    public void setLastValue(double lastValue) {
-        this.lastValue = lastValue;
-    }
+	public double getLastValue() {
+		if(lastValue == -1.0)
+			lastValue = value;
 
-    public String getIdentifier() {
-        return identifier;
-    }
+		return lastValue;
+	}
 
-    public static Element buildInfoTempElement()
-    {
-        Element infoTemp = new Element(ApplicationServiceConstants.infoTempElementQName);
+	public void setLastValue(double lastValue) {
+		this.lastValue = lastValue;
+	}
 
-        ComplexType complexType = new ComplexType(ApplicationServiceConstants.infoTempComplexTypeElementQName, ComplexType.CONTAINER_SEQUENCE);
+	public String getIdentifier() {
+		return identifier;
+	}
 
-        complexType.addElement(new Element(ApplicationServiceConstants.infoTempValueElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_DOUBLE)));
-        complexType.addElement(new Element(ApplicationServiceConstants.msgIdValueElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_ANYURI)));
+	public static Element buildInfoTempElement()
+	{
+		Element infoTemp = new Element(ApplicationServiceConstants.infoTempElementQName);
 
-        infoTemp.setType(complexType);
+		ComplexType complexType = new ComplexType(ApplicationServiceConstants.infoTempComplexTypeElementQName, ComplexType.CONTAINER_SEQUENCE);
 
-        return infoTemp;
-    }
+		complexType.addElement(new Element(ApplicationServiceConstants.infoTempValueElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_DOUBLE)));
+		complexType.addElement(new Element(ApplicationServiceConstants.msgIdValueElementQName, SchemaUtil.getSchemaType(SchemaUtil.TYPE_ANYURI)));
 
-    public Operation getInfoTempOperation() {
-        return infoTempOperation;
-    }
+		infoTemp.setType(complexType);
 
-    public Operation getGetTempOperation() {
-        return getTempOperation;
-    }
+		return infoTemp;
+	}
+
+	public Operation getInfoTempOperation() {
+		return infoTempOperation;
+	}
+
+	public Operation getGetTempOperation() {
+		return getTempOperation;
+	}
 }
