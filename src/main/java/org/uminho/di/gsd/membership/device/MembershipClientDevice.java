@@ -17,7 +17,6 @@
 package org.uminho.di.gsd.membership.device;
 
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -34,8 +33,6 @@ public class MembershipClientDevice extends MembershipDevice {
 	static Logger logger = Logger.getLogger(MembershipClientDevice.class);
 
 	protected MembershipRepositoryClient client;
-
-	private Object scheduledPool;
 
 	public MembershipClientDevice() {
 		super();
@@ -89,10 +86,6 @@ public class MembershipClientDevice extends MembershipDevice {
 		super.stopServices();
 	}
 
-	/**
-	 * @param args
-	 * @throws Exception
-	 */
 	public static void main(String[] args) throws Exception {
 		if(args.length >= 2)
 		{

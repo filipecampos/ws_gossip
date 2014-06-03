@@ -1,0 +1,18 @@
+Get ws4d-java-se-full-v2.0.0-beta3a.zip from:
+
+ https://sourceforge.net/projects/ws4d-javame/files/ws4d-jmeds-v2/framework/v2.0.0-beta3a/
+
+unzip, and install the jar in the local Maven repository:
+
+ $ mvn install:install-file \
+	-Dfile=ws4d-java-se-full.jar \
+	-DgroupId=org.ws4d \
+	-DartifactId=ws4d-java-se-full \
+	-Dversion=2.0.0-beta3a \
+	-Dpackaging=jar
+
+Build the binary distribution package with:
+
+ $ mvn package
+
+The distribution binary file is available as ./target/ws_gossip-0.1-bin.zip.
