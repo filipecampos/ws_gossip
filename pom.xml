@@ -3,7 +3,7 @@
   <groupId>pt.uminho.di</groupId>
   <artifactId>ws_gossip</artifactId>
   <version>0.1</version>
-  <name>WS-Gossip - Raft for Web Services</name>
+  <name>WS-Gossip</name>
   <description>Gossip framework for Web Services.</description>
 
   <dependencies>
